@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="grid cols-2">
+  <section class="card">
+    <h2>Users</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Active</th>
+          <th>Created</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td>{{ u.name }}</td>
+          <td>{{ u.email }}</td>
+          <td>{{ u.role }}</td>
+          <td>{{ 'Yes' if u.is_active else 'No' }}</td>
+          <td>{{ u.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td>
+            {% if current_user.role == 'admin' and u.id != current_user.id %}
+            <form method="post" action="{{ url_for('delete_user', uid=u.id) }}" onsubmit="return confirm('Delete {{ u.name }}?')">
+              <button class="btn">Delete</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="help">No users.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h3>Create User</h3>
+    <form method="post" class="grid">
+      <label>Name
+        <input name="name" required>
+      </label>
+      <label>Email
+        <input name="email" type="email" required>
+      </label>
+      <label>Role
+        <select name="role">
+          {% for r in ["engineer","programmer","operator","manager","admin"] %}
+          <option value="{{ r }}">{{ r }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Password
+        <input name="password" type="password" placeholder="Password">
+      </label>
+      <div><button type="submit">Create</button></div>
+    </form>
+  </section>
+</div>
+{% endblock %}

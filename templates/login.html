@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login • Shop Tracker</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head>
+<body>
+  <div class="container" style="max-width:420px; padding-top:12vh">
+    <div class="card">
+      <h2>Login</h2>
+      <form method="post" class="grid">
+        <label>Email
+          <input name="email" type="email" required>
+        </label>
+        <label>Password
+          <input name="password" type="password" required>
+        </label>
+        <button type="submit">Sign in</button>
+      </form>
+      <p class="help">Demo: admin@example.com / Password</p>
+    </div>
+  </div>
+</body>
+</html>

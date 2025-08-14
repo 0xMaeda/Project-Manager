@@ -1,0 +1,15 @@
+<aside id="leftAside" >
+  <section id="workloadCard" class="card" style="margin: 2px 0 16px 0;">
+    <h3>Workload (Open Tasks){% if filter_user_id %} — filtered{% endif %}</h3>
+    <table class="table">
+      <thead><tr><th>Person</th><th>Tasks</th><th>Hours</th></tr></thead>
+      <tbody>
+        {% for name, count, hrs in workload_rows %}
+        <tr><td>{{ name }}</td><td>{{ count }}</td><td>{{ '%.1f'|format(hrs) }}</td></tr>
+        {% else %}
+        <tr><td colspan="2" class="help">No open tasks.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</aside>

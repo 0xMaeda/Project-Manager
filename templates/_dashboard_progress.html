@@ -1,0 +1,20 @@
+<section id="projectProgress" class="card" style="margin: 2px 0 16px 0;">
+  <h3>Project Progress</h3>
+  {% if progress %}
+  <div class="grid" style="gap:8px">
+    {% for p in progress %}
+      <div class="row" data-project-id="{{ p.id }}" style="align-items:center; gap:8px">
+        <div style="min-width:140px"><strong>{{ p.code }}</strong></div>
+        <div style="flex:1">
+          <div class="bar" style="background:#eee; border-radius:999px; height:12px; overflow:hidden">
+            <div id="bar-{{ p.id }}" style="height:100%; width: {{ p.pct }}%; background: linear-gradient(90deg,#4ade80,#22c55e);"></div>
+          </div>
+        </div>
+        <div id="txt-{{ p.id }}" style="min-width:140px; text-align:right">{{ p.done }}/{{ p.total }} ({{ p.pct }}%)</div>
+      </div>
+    {% endfor %}
+  </div>
+  {% else %}
+    <div class="help">No projects yet.</div>
+  {% endif %}
+</section>

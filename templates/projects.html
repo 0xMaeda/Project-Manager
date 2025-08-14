@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="grid">
+  <section class="card">
+    <div class="flex" style="justify-content:space-between; align-items:center; gap:12px">
+      <h2>Projects</h2>
+      <input id="projSearch" class="input" placeholder="Search code, title, customer…" oninput="filterProjects()">
+    </div>
+    <table class="table" id="projectsTable">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Title</th>
+          <th>Customer</th>
+          <th>Rev</th>
+          <th>Due</th>
+          <th>Status</th>
+          <th style="width:120px">Priority</th>
+          <th style="width:90px">Tasks</th>
+          <th>Progress</th>
+          <th style="width:220px">Assignees</th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in projects %}
+        {% set ns = namespace(names=[], count=0) %}
+        {% for t in p.tasks %}
+          {% set ns.count = ns.count + 1 %}
+          {% for a in t.assignments %}
+            {% if a.user and a.user.name not in ns.names %}
+              {% set _ = ns.names.append(a.user.name) %}
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+        <tr>
+          <td data-k="code">{{ p.code }}</td>
+          <td data-k="title">{{ p.title }}</td>
+          <td data-k="customer">{{ p.customer }}</td>
+          <td>{{ p.rev }}</td>
+          <td>{% if p.due_date %}{{ p.due_date.strftime('%m/%d/%Y') }}{% endif %}</td>
+          <td><span class="badge">{{ p.status or 'active' }}</span></td>
+          <td>P{{ p.priority }}</td>
+          <td>{{ ns.count }}</td>
+          <td>
+            {% set total = ns.count %}
+            {% set done = 0 %}
+            {% for t in p.tasks %}{% if t.state == 'done' %}{% set done = done + 1 %}{% endif %}{% endfor %}
+            {% set pct = (done * 100 // total) if total else 0 %}
+            <div class="bar" style="background:#eee; border-radius:999px; height:12px; overflow:hidden">
+              <div id="proj-bar-{{ p.id }}" style="height:100%; width: {{ pct }}%; background: linear-gradient(90deg,#60a5fa,#3b82f6);"></div>
+            </div>
+            <div id="proj-txt-{{ p.id }}" class="help">{{ done }}/{{ total }} ({{ pct }}%)</div>
+          </td>
+          <td>{{ ns.names|join(', ') }}</td>
+          <td><a class="btn" href="{{ url_for('project_detail', pid=p.id) }}">Open</a></td>
+          <td>
+            {% if current_user.role == 'admin' %}
+            <form method="post" action="{{ url_for('delete_project', pid=p.id) }}" onsubmit="return confirm('Delete project {{ p.code }}?')">
+              <button class="btn">Delete</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="12" class="help">No projects yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h3>Create Project</h3>
+    <form method="post" class="row">
+      <label>Code
+        <input name="code" placeholder="JOB-1003" required>
+      </label>
+      <label>Title
+        <input name="title" placeholder="Part / Assembly" required>
+      </label>
+      <label>Customer
+        <input name="customer">
+      </label>
+      <label>Rev
+        <input name="rev">
+      </label>
+      <label>Due Date
+        <input name="due_date" type="date">
+      </label>
+      <label>Priority
+        <select name="priority">
+          <option value="1">1 (Hot)</option>
+          <option value="2">2</option>
+          <option value="3" selected>3</option>
+          <option value="4">4</option>
+          <option value="5">5 (Low)</option>
+        </select>
+      </label>
+      <div><button type="submit">Create</button></div>
+    </form>
+  </section>
+</div>
+
+<script>
+function filterProjects(){
+  const q = (document.getElementById('projSearch').value || '').toLowerCase();
+  const rows = document.querySelectorAll('#projectsTable tbody tr');
+  for(const r of rows){
+    const code = (r.querySelector('[data-k="code"]')?.textContent || '').toLowerCase();
+    const title = (r.querySelector('[data-k="title"]')?.textContent || '').toLowerCase();
+    const customer = (r.querySelector('[data-k="customer"]')?.textContent || '').toLowerCase();
+    r.style.display = (code.includes(q) || title.includes(q) || customer.includes(q)) ? '' : 'none';
+  }
+}
+</script>
+{% endblock %}

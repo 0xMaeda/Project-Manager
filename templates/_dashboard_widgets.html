@@ -1,0 +1,22 @@
+<aside id="leftAside" class="grid">
+  <section class="card">
+    <h3>Due Soon (<= 3 days){% if filter_user_id %} — filtered{% endif %}</h3>
+    <ul>
+      {% for t in due_soon %}
+      <li>{{ t.project.code if t.project else "" }} • {{ t.title }} — <strong>{{ t.due_date.strftime('%m/%d/%Y') }}</strong></li>
+      {% else %}
+      <li class="help">All clear.</li>
+      {% endfor %}
+    </ul>
+  </section>
+  <section class="card">
+    <h3>Blocked{% if filter_user_id %} — filtered{% endif %}</h3>
+    <ul>
+      {% for t in blocked %}
+      <li>{{ t.project.code if t.project else "" }} • {{ t.title }} <span class="badge">P{{ t.priority }}</span></li>
+      {% else %}
+      <li class="help">No blocked tasks 🎉</li>
+      {% endfor %}
+    </ul>
+  </section>
+</aside>

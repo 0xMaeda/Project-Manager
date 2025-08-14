@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="grid cols-3">
+  <section class="card" style="grid-column: span 2">
+    <h2>{{ project.code }} — {{ project.title }}</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Task</th>
+          <th>State</th>
+          <th style="width:280px">Assignees</th>
+          <th style="width:90px">Priority</th>
+          <th>Est</th>
+          <th>Due</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in tasks %}
+        <tr>
+          <td>
+            <form method="post" action="{{ url_for('update_task', tid=t.id) }}">
+              <input name="title" value="{{ t.title }}">
+          </td>
+          <td>
+              <select name="state">
+                {% for s in ["backlog","ready","in_progress","blocked","review","done"] %}
+                <option value="{{ s }}" {% if t.state==s %}selected{% endif %}>{{ s.replace('_',' ') }}</option>
+                {% endfor %}
+              </select>
+          </td>
+          <td class="assign-cell">
+            {# Current assignees with remove buttons #}
+            {% set tas = t.assignments %}
+            {% for a in tas %}
+              {% if a.user %}
+                <form method="post" action="{{ url_for('unassign_task', tid=t.id, aid=a.id) }}" style="display:inline">
+                  <span class="badge">{{ a.user.name }}</span>
+                  <button class="btn" style="padding:2px 6px; font-size:.75rem; margin-left:4px">x</button>
+                </form>
+              {% endif %}
+            {% endfor %}
+
+            <details>
+              <summary class="help">assign…</summary>
+              <form method="post" action="{{ url_for('assign_task', tid=t.id) }}">
+                <div class="grid cols-6">
+                  <label style="grid-column:span 3">Assign to users (multi-select)
+                    <select name="user_ids" multiple size="6">
+                      {% for u in users %}<option value="{{ u.id }}">{{ u.name }}</option>{% endfor %}
+                    </select>
+                  </label>
+                  <div style="grid-column:span 6"><button type="submit">Add Assignment(s)</button></div>
+                </div>
+              </form>
+            </details>
+          </td>
+          <td class="priority-cell">
+              <select name="priority">
+                {% for p in [1,2,3,4,5] %}
+                <option value="{{ p }}" {% if t.priority==p %}selected{% endif %}>{{ p }}</option>
+                {% endfor %}
+              </select>
+          </td>
+          <td><input name="est_hours" value="{{ '%.1f'|format(t.est_hours) }}" disabled></td>
+          <td><input name="due_date" type="date" value="{% if t.due_date %}{{ t.due_date.strftime('%Y-%m-%d') }}{% endif %}"></td>
+          <td>
+              <button type="submit">Save</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="help">No tasks yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h3>New Task</h3>
+    <form method="post" class="grid">
+      <label>Title
+        <input name="title" required>
+      </label>
+      <label>Description
+        <textarea name="description" rows="3"></textarea>
+      </label>
+      <label>State
+        <select name="state">
+          {% for s in ["backlog","ready","in_progress","blocked","review","done"] %}
+          <option value="{{ s }}">{{ s.replace('_',' ') }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Priority
+        <select name="priority">
+          {% for p in [1,2,3,4,5] %}
+          <option value="{{ p }}" {% if p==3 %}selected{% endif %}>{{ p }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Est. Hours
+        <input name="est_hours" type="number" step="0.1">
+      </label>
+      <label>Due Date
+        <input name="due_date" type="date">
+      </label>
+      <div><button type="submit">Create Task</button></div>
+    </form>
+  </section>
+</div>
+{% endblock %}

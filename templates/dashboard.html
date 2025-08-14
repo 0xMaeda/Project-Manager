@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="grid cols-2">
+  <section class="card">
+    <div class="flex" style="justify-content:space-between; align-items:center">
+      <h2>Kanban</h2>
+      <form method="get" action="{{ url_for('dashboard') }}" class="flex" style="gap:8px">
+        <label class="help">Filter by user</label>
+        <select name="user" onchange="this.form.submit()">
+          <option value="" {% if not filter_user_id %}selected{% endif %}>All</option>
+          <option value="{{ current_user.id }}" {% if filter_user_id == current_user.id %}selected{% endif %}>My tasks ({{ current_user.name }})</option>
+          {% for u in users %}
+            <option value="{{ u.id }}" {% if filter_user_id == u.id %}selected{% endif %}>{{ u.name }}</option>
+          {% endfor %}
+        </select>
+        {% if filter_user_id %}
+          <a class="btn" href="{{ url_for('dashboard') }}">Clear</a>
+        {% endif %}
+      </form>
+    </div>
+    <section class="kanban">
+      {% for col in ["backlog","ready","in_progress","blocked","review","done"] %}
+      <div class="col" data-state="{{ col }}" ondrop="dropTask(event)" ondragover="event.preventDefault()">
+        <header><h3>{{ col.replace('_',' ')|title }}</h3></header>
+        <div class="list">
+          {% for t in tasks if t.state == col %}
+          <article class="card task" draggable="true" ondragstart="dragTask(event)" data-task="{{ t.id }}">
+            <div class="title">{{ t.title }}</div>
+            <div class="meta">
+              <span class="chip p{{ t.priority }}">P{{ t.priority }}</span>
+              {% if t.due_date %}<time>{{ t.due_date.strftime('%m/%d/%Y') }}</time>{% endif %}
+              <span class="right badge">{{ t.project.code if t.project else "" }}</span>
+            </div>
+            <div class="meta">
+              {% set tas = assignments.get(t.id, []) %}
+              {% for a in tas %}
+                {% if a.user %}<span class="avatar" title="{{ a.user.name }}">{{ a.user.name[0] }}</span>{% endif %}
+              {% endfor %}
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </section>
+  </section>
+<dev>
+  {% include "_dashboard_workload.html" %}
+  {% include "_dashboard_progress.html" %}
+
+</dev>
+  {% include "_dashboard_widgets.html" %}
+{% endblock %}
